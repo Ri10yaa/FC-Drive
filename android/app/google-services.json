@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "489260122342",
+    "project_id": "fcstorage-c0cf0",
+    "storage_bucket": "fcstorage-c0cf0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:489260122342:android:f065f0259283401da07b27",
+        "android_client_info": {
+          "package_name": "com.example.fc_drive"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAI99TDuVDqioP39fATrwi8ltz7f8bnlkQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
