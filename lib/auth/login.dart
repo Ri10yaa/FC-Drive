@@ -15,6 +15,14 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login() async {
     try {
+      // Validate input
+      if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+        setState(() {
+          _error = 'Email and password are required';
+        });
+        return;
+      }
+
       // Firebase Authentication Login
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
@@ -22,6 +30,7 @@ class _LoginPageState extends State<LoginPage> {
         password: _passwordController.text.trim(),
       );
 
+      // Retrieve Firebase token
       String? token = await userCredential.user!.getIdToken();
 
       // API Request
@@ -33,7 +42,8 @@ class _LoginPageState extends State<LoginPage> {
         },
       );
 
-      if (response.statusCode == 200) {
+      // Handle response
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         setState(() {
           _error = ''; // Clear any previous errors
           print('Login successful');
@@ -48,6 +58,7 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     } catch (e) {
+      print('Login error: $e'); // Log error for debugging
       setState(() {
         _error = e.toString();
       });

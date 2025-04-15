@@ -4,22 +4,24 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'homepage.dart';
 import 'theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: FirebaseOptions(
-        apiKey: "AIzaSyCYsARjt4m2IXZToSP5qLFzMLoy2dn48Cw",
-        authDomain: "fcstorage-c0cf0.firebaseapp.com",
-        projectId: "fcstorage-c0cf0",
-        storageBucket: "fcstorage-c0cf0.firebasestorage.app",
-        messagingSenderId: "489260122342",
-        appId: "1:489260122342:web:8b997c1299718c97a07b27",
-        measurementId: "G-XW6BRWC33T",
+        apiKey: dotenv.env['FIREBASE_API_KEY']?? '',
+        authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN']??'',
+        projectId: dotenv.env['FIREBASE_PROJECT_ID']??'',
+        storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'],
+        messagingSenderId: dotenv.env['FIREBASE_MSG_ID']??'',
+        appId: dotenv.env['FIREBASE_APP_ID']??'',
+        measurementId: dotenv.env['FIREBASE_MSR_ID'],
       ),
     );
   } else {
@@ -43,8 +45,7 @@ class MyApp extends StatelessWidget {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: Colors.black,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -92,52 +93,32 @@ class OnboardingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // App Logo
-            Image.asset(
-              'assets/logo.png',
-              height: 100,
-            ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // Welcome Text
-            Text(
+            const Text(
               'Welcome to FC-Drive',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
+                color: Colors.green, // Green theme color
               ),
             ),
-            SizedBox(height: 10),
-            // Description
-            Text(
-              'Sign in to manage and organize your files securely.',
+            const SizedBox(height: 10),
+            // Description Text
+            const Text(
+              'FC-Drive helps you store, organize, and share your files securely, just like Google Drive—but with a unique, personal touch.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             // Sign In Button
             ElevatedButton(
               onPressed: () {
-                // Navigate to Sign-In Page
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SignupPage(),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-              ),
-              child: Text('Sign Up'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to Sign-In Page
+                // Navigate to Login Page
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -146,9 +127,29 @@ class OnboardingPage extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                 // Green theme for button
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                backgroundColor: null,
               ),
-              child: Text('Log In'),
+              child: const Text('Log In'),
+            ),
+            const SizedBox(height: 20),
+            // Sign Up Button
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to Sign-Up Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SignupPage(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Green theme for button
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              ),
+              child: const Text('Sign Up'),
             ),
           ],
         ),
@@ -156,5 +157,4 @@ class OnboardingPage extends StatelessWidget {
     );
   }
 }
-
 

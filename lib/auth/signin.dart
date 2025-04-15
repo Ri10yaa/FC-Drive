@@ -1,6 +1,10 @@
+import 'dart:convert';
+
+import 'package:fc_drive/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:fc_drive/auth/encryption.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -15,38 +19,67 @@ class _SignupPageState extends State<SignupPage> {
 
   void _signup() async {
     try {
+      if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+        setState(() {
+          _error = 'Email and password are required';
+        });
+        return;
+      }
+
+      // Firebase Authentication
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      String? token = await userCredential.user!.getIdToken();
 
+      // Encrypt Firebase UID
+      String firebaseUid = userCredential.user!.uid;
+
+      String encryptedUid = encryptFirebaseUid(firebaseUid);
+
+
+      // API Call
+      String? token = await userCredential.user!.getIdToken();
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:5000/auth/signin'),
+        Uri.parse('http://127.0.0.1:5000/auth/signup'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: '{"email": "${_emailController.text}", "password": "${_passwordController.text}"}',
+        body: jsonEncode({
+          'email': _emailController.text.trim(),
+          'firebase_uid': encryptedUid.trim(),
+        }),
       );
 
-      if (response.statusCode == 200) {
+      // Handle Response
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         setState(() {
-          _message = "Signup successful! Welcome.";
+          _message = 'Signup successful!';
           _error = '';
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MyHomePage()),
+          );
         });
       } else {
         setState(() {
           _error = 'API Signup failed: ${response.body}';
-          _message = '';
         });
       }
+    } on FirebaseAuthException catch (_, e) {
+    setState(() {
+    _error = 'Firebase Error: ${e.toString()}';
+    });
+    } on http.ClientException catch (_, e) {
+    setState(() {
+    _error = 'Network Error: ${e}';
+    });
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _message = '';
-      });
+    setState(() {
+    _error = 'Unknown Error: $e';
+    });
     }
   }
 
