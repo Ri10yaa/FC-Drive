@@ -1,28 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:fc_drive/theme.dart';
+import 'package:fc_drive/screens/home.dart';
+import 'package:fc_drive/screens/folder.dart';
+import 'package:fc_drive/screens/profile.dart';
+
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _selectedIndex = 0;
-  final List<Widget> _pages = [
-    HomeScreen(),
-    FolderScreen(),
-    ProfileScreen(),
-  ];
+  int _selectedIndex = 0; // Current selected index
+  final List<Widget> _pages = [HomeScreen(), FolderScreen(), ProfileScreen()];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -33,57 +24,53 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: Theme(
-        data: Theme.of(context).copyWith(
-          splashFactory: NoSplash.splashFactory,
-        ),
-        child: BottomNavigationBar(
-          backgroundColor: AppColors.secondary,
-          selectedItemColor: AppColors.accent,
-          unselectedItemColor: AppColors.primary,
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.folder),
-              label: 'Folder',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle),
-              label: 'Profile',
+      body: Column(
+        children: [
+          Expanded(
+            child: _pages[_selectedIndex],
+          ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              offset: Offset(0, -1),
             ),
           ],
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+          child: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Color(0xFF67AE6E),
+            selectedItemColor: Color(0xFF27391C),
+            unselectedItemColor: Color(0xFFC1D8C3),
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.folder), label: 'Folder'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.account_circle),
+                label: 'Profile',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            elevation: 5,
+          ),
         ),
       ),
-
     );
+
   }
 }
 
-
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Home Page'));
-  }
-}
-
-class FolderScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Folder Page'));
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Profile Page'));
-  }
-}

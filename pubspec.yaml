@@ -41,6 +41,8 @@ dependencies:
   shared_preferences: ^2.5.3
   encrypt: ^5.0.3
   flutter_dotenv: ^5.2.1
+  provider: ^6.1.4
+  file_picker: ^10.1.2
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +62,8 @@ dev_dependencies:
 flutter:
   assets:
     - .env
+    - assets/FC-drive..png
+    - assets/logo.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
