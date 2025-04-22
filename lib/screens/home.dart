@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import "package:file_picker/file_picker.dart";
+import 'package:http_parser/http_parser.dart';
 
+
+import '../FolderProvider.dart';
 import '../UserProvider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -15,16 +18,20 @@ class HomeScreen extends StatelessWidget {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         final List<dynamic> files = responseData['files'] ?? [];
+        print(files);
 
         return files.map<Map<String, String>>((file) {
           return {
             "file_name": file["file_name"] ?? "",
             "file_type": file["file_type"] ?? "",
-            "file_size": file["file_size"]?.toString() ?? "",
+            "file_size": file["file_size"]?.toString() ?? "", // Convert file_size to String
             "path": file["path"] ?? "",
-            "accessed_at": file["accessed_at"] ?? "",
+            "accessed_at": file["accessed_at"] ?? "", // Expect ISO-formatted date
           };
         }).toList();
+      } else if (response.statusCode == 404) {
+        print('No recent files found');
+        return [];
       } else {
         print('Failed to fetch files: ${response.body}');
         return [];
@@ -39,10 +46,10 @@ class HomeScreen extends StatelessWidget {
     String userId,
     PlatformFile selectedFile,
     String fileName,
-    List<String> folderHierarchy,
     BuildContext context,
   ) async {
     final String url = 'http://127.0.0.1:5000/files/upload';
+    final folderHierarchy = Provider.of<FolderProvider>(context, listen: false).currentPath;
 
     try {
       // Show loading indicator
@@ -53,7 +60,11 @@ class HomeScreen extends StatelessWidget {
           return Center(child: CircularProgressIndicator());
         },
       );
-
+      print(userId);
+      print(fileName);
+      print(folderHierarchy);
+      final int fileSize = selectedFile.size;
+      final String? fileType = selectedFile.extension ?? 'application/octet-stream';
       // Prepare request body and metadata
       var request = http.MultipartRequest('POST', Uri.parse(url));
       request.files.add(
@@ -67,6 +78,8 @@ class HomeScreen extends StatelessWidget {
         "firebase_id": userId,
         "file_name": fileName,
         "folder_hiearchy": folderHierarchy,
+        "file_size" : fileSize,
+        "file_type" : fileType
       });
 
       var response = await request.send();
@@ -96,10 +109,10 @@ class HomeScreen extends StatelessWidget {
   Future<void> createFolder(
     String userId,
     String folderName,
-    List<String> folderHierarchy,
     BuildContext context,
   ) async {
     final String url = 'http://127.0.0.1:5000/folders/create';
+    final folderHierarchy = Provider.of<FolderProvider>(context, listen: false).currentPath;
 
     try {
       // Show loading indicator
@@ -110,6 +123,9 @@ class HomeScreen extends StatelessWidget {
           return Center(child: CircularProgressIndicator());
         },
       );
+      print(userId);
+      print(folderName);
+      print(folderHierarchy);
 
       final response = await http.post(
         Uri.parse(url),
@@ -161,12 +177,6 @@ class HomeScreen extends StatelessWidget {
                 controller: fileNameController,
                 decoration: InputDecoration(labelText: 'File Name'),
               ),
-              TextField(
-                controller: folderHierarchyController,
-                decoration: InputDecoration(
-                  labelText: 'Folder Hierarchy (comma separated)',
-                ),
-              ),
               ElevatedButton(
                 onPressed: () async {
                   FilePickerResult? result =
@@ -178,11 +188,7 @@ class HomeScreen extends StatelessWidget {
                       userId,
                       selectedFile,
                       fileNameController.text.trim(),
-                      folderHierarchyController.text
-                          .split(',')
-                          .map((e) => e.trim())
-                          .toList(),
-                      context,
+                      context
                     );
                   } else {
                     ScaffoldMessenger.of(
@@ -217,21 +223,11 @@ class HomeScreen extends StatelessWidget {
                 controller: folderNameController,
                 decoration: InputDecoration(labelText: 'Folder Name'),
               ),
-              TextField(
-                controller: folderHierarchyController,
-                decoration: InputDecoration(
-                  labelText: 'Folder Hierarchy (comma separated)',
-                ),
-              ),
               ElevatedButton(
                 onPressed: () {
                   createFolder(
                     userId,
                     folderNameController.text.trim(),
-                    folderHierarchyController.text
-                        .split(',')
-                        .map((e) => e.trim())
-                        .toList(),
                     context,
                   );
                 },
