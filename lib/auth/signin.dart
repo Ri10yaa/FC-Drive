@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:fc_drive/user.dart';
+import 'package:fc_drive/models/user.dart';
 import 'package:fc_drive/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,8 +8,8 @@ import 'package:fc_drive/auth/encryption.dart';
 import 'package:provider/provider.dart';
 import 'package:fc_drive/auth/encryption.dart';
 
-import '../UserProvider.dart';
-
+import '../providers/UserProvider.dart';
+import '../utilities/notifications.dart';
 class SignupPage extends StatefulWidget {
   @override
   _SignupPageState createState() => _SignupPageState();
@@ -28,7 +28,11 @@ class _SignupPageState extends State<SignupPage> {
       // Validate input
       if (_emailController.text.trim().isEmpty ||
           _passwordController.text.trim().isEmpty) {
-        _showInAppNotification('Email and password are required', Colors.red);
+        NotificationUtil.showInAppNotification(
+          context: context,
+          text: 'Email and password are required',
+          color: Colors.red,
+        );
         return;
       }
 
@@ -66,35 +70,41 @@ class _SignupPageState extends State<SignupPage> {
       }
       else if(response.statusCode==400){
         String? msg = responseData['error'];
-        _showInAppNotification(
-          'Error: $msg',
-          Colors.red,
+        NotificationUtil.showInAppNotification(
+          context: context,
+          text: 'Error: $msg',
+          color: Colors.red,
         );
       } else {
-        _showInAppNotification(
-          'API Signup failed: ${response.body}',
-          Colors.red,
+        NotificationUtil.showInAppNotification(
+          context: context,
+          text: 'API Signup failed: ${response.body}',
+          color: Colors.red,
         );
       }
     } catch (e) {
-      _showInAppNotification('Error: $e', Colors.red);
+      NotificationUtil.showInAppNotification(
+        context: context,
+        text: 'Error: $e',
+        color: Colors.red,
+      );
     }
   }
 
 
-  void _showInAppNotification(String text, Color color) {
-    setState(() {
-      _notificationText = text;
-      _notificationColor = color;
-      _showNotification = true;
-    });
-
-    Future.delayed(Duration(seconds: 3), () {
-      setState(() {
-        _showNotification = false;
-      });
-    });
-  }
+  // void _showInAppNotification(String text, Color color) {
+  //   setState(() {
+  //     _notificationText = text;
+  //     _notificationColor = color;
+  //     _showNotification = true;
+  //   });
+  //
+  //   Future.delayed(Duration(seconds: 3), () {
+  //     setState(() {
+  //       _showNotification = false;
+  //     });
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +117,7 @@ class _SignupPageState extends State<SignupPage> {
                   MediaQuery.of(context).size.width *
                   0.8, // Occupies 80% of screen width
               child: Card(
-                color: Color(0xFFFDFAF6),
+                color: Colors.white,
                 elevation: 5,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),

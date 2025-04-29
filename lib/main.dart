@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'package:fc_drive/UserProvider.dart';
+import 'package:fc_drive/providers/UserProvider.dart';
 
-import 'FolderProvider.dart';
+import 'providers/FolderProvider.dart';
 import 'homepage.dart';
 
 
@@ -37,7 +37,7 @@ void main() async {
           ChangeNotifierProvider(create: (context) => UserProvider()),
           ChangeNotifierProvider(create: (context) => FolderProvider()),
         ],
-        child: MyApp(),
+        child: MyApp()
       )
   );
 }
@@ -49,8 +49,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         theme: ThemeData(
-          scaffoldBackgroundColor: Color(0xFFFDFAF6),
-          cardColor: Color(0xFFFDFAF6),
+          scaffoldBackgroundColor: Colors.grey[100],
+          progressIndicatorTheme: ProgressIndicatorThemeData(
+            color: Color(0xFFBF9264),
+          ),
         ),
         home: CheckFirstRun()
     );

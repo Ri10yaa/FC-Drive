@@ -4,12 +4,26 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import "package:file_picker/file_picker.dart";
 import 'package:http_parser/http_parser.dart';
+import 'package:intl/intl.dart';
 
+import '../providers/FolderProvider.dart';
+import '../providers/UserProvider.dart';
+import '../utilities/notifications.dart';
+import 'FilePreview.dart';
+import '../utilities/FloatingButton.dart';
 
-import '../FolderProvider.dart';
-import '../UserProvider.dart';
+class HomeScreen extends StatefulWidget {
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
-class HomeScreen extends StatelessWidget {
+class _HomeScreenState extends State<HomeScreen> {
+  String _notificationText = "";
+
+  bool _showNotification = false;
+  // In-app notification visibility
+  Color _notificationColor = Colors.red;
+
   Future<List<Map<String, String>>> fetchRecentFiles(String userId) async {
     final String url = 'http://127.0.0.1:5000/files/recent/$userId';
     try {
@@ -24,9 +38,11 @@ class HomeScreen extends StatelessWidget {
           return {
             "file_name": file["file_name"] ?? "",
             "file_type": file["file_type"] ?? "",
-            "file_size": file["file_size"]?.toString() ?? "", // Convert file_size to String
+            "file_size": file["file_size"]?.toString() ??
+                "", // Convert file_size to String
             "path": file["path"] ?? "",
-            "accessed_at": file["accessed_at"] ?? "", // Expect ISO-formatted date
+            "accessed_at":
+                file["accessed_at"] ?? "", // Expect ISO-formatted date
           };
         }).toList();
       } else if (response.statusCode == 404) {
@@ -49,7 +65,8 @@ class HomeScreen extends StatelessWidget {
     BuildContext context,
   ) async {
     final String url = 'http://127.0.0.1:5000/files/upload';
-    final folderHierarchy = Provider.of<FolderProvider>(context, listen: false).currentPath;
+    final folderHierarchy =
+        Provider.of<FolderProvider>(context, listen: false).currentPath;
 
     try {
       // Show loading indicator
@@ -57,14 +74,16 @@ class HomeScreen extends StatelessWidget {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return Center(child: CircularProgressIndicator());
+          return Center(
+              child: CircularProgressIndicator(color: Color(0xFFBF9264)));
         },
       );
       print(userId);
       print(fileName);
       print(folderHierarchy);
       final int fileSize = selectedFile.size;
-      final String? fileType = selectedFile.extension ?? 'application/octet-stream';
+      final String? fileType =
+          selectedFile.extension ?? 'application/octet-stream';
       // Prepare request body and metadata
       var request = http.MultipartRequest('POST', Uri.parse(url));
       request.files.add(
@@ -78,31 +97,47 @@ class HomeScreen extends StatelessWidget {
         "firebase_id": userId,
         "file_name": fileName,
         "folder_hiearchy": folderHierarchy,
-        "file_size" : fileSize,
-        "file_type" : fileType
+        "file_size": fileSize,
+        "file_type": fileType
       });
 
       var response = await request.send();
 
       Navigator.pop(context); // Remove loading indicator
+      Navigator.pop(context); // remove the menu options
 
       if (response.statusCode == 200) {
         print('File uploaded successfully');
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('File uploaded successfully')));
+        NotificationUtil.showInAppNotification(
+          context: context,
+          text: 'File uploaded successfully',
+          color: Colors.green,
+        );
+        // ScaffoldMessenger.of(
+        //   context,
+        // ).showSnackBar(SnackBar(content: Text('File uploaded successfully')));
       } else {
         print('Failed to upload file: ${response.reasonPhrase}');
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to upload file')));
+        NotificationUtil.showInAppNotification(
+          context: context,
+          text: 'Failed to upload file: ${response.reasonPhrase}',
+          color: Colors.red,
+        );
+        // ScaffoldMessenger.of(
+        //   context,
+        // ).showSnackBar(SnackBar(content: Text('Failed to upload file')));
       }
     } catch (e) {
       Navigator.pop(context); // Remove loading indicator
       print('Error while uploading file: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error while uploading file')));
+      NotificationUtil.showInAppNotification(
+        context: context,
+        text: 'Error while uploading file: $e',
+        color: Colors.red,
+      );
+      // ScaffoldMessenger.of(
+      //   context,
+      // ).showSnackBar(SnackBar(content: Text('Error while uploading file')));
     }
   }
 
@@ -112,7 +147,8 @@ class HomeScreen extends StatelessWidget {
     BuildContext context,
   ) async {
     final String url = 'http://127.0.0.1:5000/folders/create';
-    final folderHierarchy = Provider.of<FolderProvider>(context, listen: false).currentPath;
+    final folderHierarchy =
+        Provider.of<FolderProvider>(context, listen: false).currentPath;
 
     try {
       // Show loading indicator
@@ -120,7 +156,8 @@ class HomeScreen extends StatelessWidget {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return Center(child: CircularProgressIndicator());
+          return Center(
+              child: CircularProgressIndicator(color: Color(0xFFBF9264)));
         },
       );
       print(userId);
@@ -141,63 +178,140 @@ class HomeScreen extends StatelessWidget {
 
       if (response.statusCode == 200) {
         print('Folder created successfully');
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Folder created successfully')));
+        NotificationUtil.showInAppNotification(
+          context: context,
+          text: 'Folder created successfully',
+          color: Colors.green,
+        );
+        // ScaffoldMessenger.of(
+        //   context,
+        // ).showSnackBar(SnackBar(content: Text('Folder created successfully')));
       } else {
         print('Failed to create folder: ${response.body}');
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to create folder')));
+        NotificationUtil.showInAppNotification(
+          context: context,
+          text: 'Failed to create folder: ${response.body}',
+          color: Colors.red,
+        );
+        // ScaffoldMessenger.of(
+        //   context,
+        // ).showSnackBar(SnackBar(content: Text('Failed to create folder')));
       }
     } catch (e) {
       Navigator.pop(context); // Remove loading indicator
       print('Error while creating folder: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error while creating folder')));
+      NotificationUtil.showInAppNotification(
+        context: context,
+        text: 'Error while creating folder: $e',
+        color: Colors.red,
+      );
+      // ScaffoldMessenger.of(
+      //   context,
+      // ).showSnackBar(SnackBar(content: Text('Error while creating folder')));
     }
   }
 
   void _showFileUploadPopup(BuildContext context, String userId) {
     final TextEditingController fileNameController = TextEditingController();
-    final TextEditingController folderHierarchyController =
-        TextEditingController();
+
+    PlatformFile? selectedFile; // To store the selected file
 
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
         return Container(
           padding: EdgeInsets.all(16.0),
-          height: 250,
+          height: 180,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
                 controller: fileNameController,
-                decoration: InputDecoration(labelText: 'File Name'),
+                decoration: InputDecoration(
+                  labelText: 'File Name',
+                  labelStyle: TextStyle(
+                    color: Color(0xFF27391C),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(
+                        0xFF67AE6E,
+                      ), // Change this to your desired color
+                      width: 2.0, // Adjust the width of the border
+                    ),
+                  ),
+                ),
+                cursorColor: Color(0xFF27391C),
               ),
-              ElevatedButton(
-                onPressed: () async {
-                  FilePickerResult? result =
-                      await FilePicker.platform.pickFiles();
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      FilePickerResult? result =
+                          await FilePicker.platform.pickFiles();
 
-                  if (result != null) {
-                    PlatformFile selectedFile = result.files.first;
-                    uploadFile(
-                      userId,
-                      selectedFile,
-                      fileNameController.text.trim(),
-                      context
-                    );
-                  } else {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('No file selected')));
-                  }
-                },
-                child: Text('Pick and Upload File'),
-              ),
+                      if (result != null) {
+                        selectedFile =
+                            result.files.first; // Store selected file
+                        fileNameController.text =
+                            selectedFile!.name; // Auto-fill filename
+                      } else {
+                        NotificationUtil.showInAppNotification(
+                          context: context,
+                          text: 'No file selected',
+                          color: Colors.yellowAccent,
+                        );
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   SnackBar(content: Text('No file selected')),
+                        // );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF67AE6E),
+                      foregroundColor: Colors.black,
+                    ),
+                    child: Text(
+                      'Pick File',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (selectedFile != null) {
+                        uploadFile(
+                          userId,
+                          selectedFile!,
+                          fileNameController.text.trim(),
+                          context,
+                        );
+                      } else {
+                        NotificationUtil.showInAppNotification(
+                          context: context,
+                          text: 'No file selected for upload',
+                          color: Colors.yellowAccent,
+                        );
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   SnackBar(
+                        //       content: Text('No file selected for upload')),
+                        // );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF67AE6E),
+                      foregroundColor: Colors.black,
+                    ),
+                    child: Text(
+                      'Submit File',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              )
             ],
           ),
         );
@@ -221,8 +335,14 @@ class HomeScreen extends StatelessWidget {
             children: [
               TextField(
                 controller: folderNameController,
-                decoration: InputDecoration(labelText: 'Folder Name'),
+                decoration: InputDecoration(
+                  labelText: 'Folder Name',
+                  labelStyle: TextStyle(
+                    color: Color(0xFF27391C),
+                  ),
+                ),
               ),
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   createFolder(
@@ -231,7 +351,16 @@ class HomeScreen extends StatelessWidget {
                     context,
                   );
                 },
-                child: Text('Create Folder'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF67AE6E),
+                  foregroundColor: Colors.black,
+                ),
+                child: Text(
+                  'Create Folder',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ],
           ),
@@ -276,6 +405,20 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // void _showInAppNotification(String text, Color color) {
+  //   setState(() {
+  //     _notificationText = text;
+  //     _notificationColor = color;
+  //     _showNotification = true;
+  //   });
+  //
+  //   Future.delayed(Duration(seconds: 3), () {
+  //     setState(() {
+  //       _showNotification = false;
+  //     });
+  //   });
+  // }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserProvider>(context).user;
@@ -316,7 +459,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Container for Recent Files
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -342,8 +484,17 @@ class HomeScreen extends StatelessWidget {
                             color: Colors.green,
                           ),
                           title: Text(file['file_name'] ?? ""),
-                          subtitle: Text('Last opened: ${file['accessed_at']}'),
+                          subtitle: Text(
+                            'Last opened: ${DateFormat('dd/MM/yyyy hh:mm').format(DateTime.parse(file['accessed_at']!))}',
+                          ),
                           onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FilePreviewScreen(fileKey: file['path']!),
+                              ),
+                            );
+
                             print('File ${file['file_name']} tapped');
                           },
                         );
@@ -358,11 +509,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showOptionsMenu(context),
-        backgroundColor: Color(0xFFBF9264),
-        child: Icon(Icons.add, color: Colors.white),
-      ),
+      floatingActionButton: const UploadFloatingButton()
     );
   }
 }

@@ -43,6 +43,9 @@ dependencies:
   flutter_dotenv: ^5.2.1
   provider: ^6.1.4
   file_picker: ^10.1.2
+  intl: ^0.20.2
+  flutter_pdfview: ^1.4.0+1
+  syncfusion_flutter_pdfviewer: ^29.1.39
 
 dev_dependencies:
   flutter_test:

@@ -2,7 +2,7 @@ import 'package:fc_drive/auth/login.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../UserProvider.dart';
+import '../providers/UserProvider.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override

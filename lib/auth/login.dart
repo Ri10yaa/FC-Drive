@@ -7,9 +7,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
-import '../UserProvider.dart';
-import '../user.dart';
-
+import '../providers/UserProvider.dart';
+import '../models/user.dart';
+import '../utilities/notifications.dart';
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -28,7 +28,11 @@ class _LoginPageState extends State<LoginPage> {
       // Validate input
       if (_emailController.text.trim().isEmpty ||
           _passwordController.text.trim().isEmpty) {
-        _showInAppNotification('Email and password are required', Colors.red);
+        NotificationUtil.showInAppNotification(
+          context: context,
+          text: 'Email and password are required',
+          color: Colors.red,
+        );
         return;
       }
 
@@ -59,32 +63,36 @@ class _LoginPageState extends State<LoginPage> {
           context,
           MaterialPageRoute(builder: (context) => MyHomePage()),
         );
-      } else if (response.statusCode == 400) {
-        _showInAppNotification('Login failed: $res', Colors.red);
-      } else if (response.statusCode == 401) {
-        _showInAppNotification('Login failed: $res', Colors.red);
       } else {
-        _showInAppNotification('Login failed: $res', Colors.red);
+        NotificationUtil.showInAppNotification(
+          context: context,
+          text: 'Login failed: $res',
+          color: Colors.red,
+        );
       }
     } catch (e) {
-      _showInAppNotification('Error: $e', Colors.red);
+      NotificationUtil.showInAppNotification(
+        context: context,
+        text: 'Error: $e',
+        color: Colors.red,
+      );
     }
   }
 
-  void _showInAppNotification(String text, Color color) {
-    setState(() {
-      _notificationText = text;
-      _notificationColor = color;
-      _showNotification = true;
-    });
-
-    // Auto-hide notification after 3 seconds
-    Future.delayed(Duration(seconds: 3), () {
-      setState(() {
-        _showNotification = false;
-      });
-    });
-  }
+  // void _showInAppNotification(String text, Color color) {
+  //   setState(() {
+  //     _notificationText = text;
+  //     _notificationColor = color;
+  //     _showNotification = true;
+  //   });
+  //
+  //   // Auto-hide notification after 3 seconds
+  //   Future.delayed(Duration(seconds: 3), () {
+  //     setState(() {
+  //       _showNotification = false;
+  //     });
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                   MediaQuery.of(context).size.width *
                   0.8, // Occupies 80% of screen width
               child: Card(
-                color: Color(0xFFFDFAF6),
+                color: Colors.white,
                 elevation: 5,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
